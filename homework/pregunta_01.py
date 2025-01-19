@@ -1,10 +1,11 @@
-# pylint: disable=import-outside-toplevel
-# pylint: disable=line-too-long
-# flake8: noqa
 """
 Escriba el codigo que ejecute la accion solicitada en cada pregunta.
 """
 
+import os
+import zipfile
+import csv
+import pandas as pd
 
 def pregunta_01():
     """
@@ -71,3 +72,42 @@ def pregunta_01():
 
 
     """
+
+    ubicacion_zip = "files/input.zip"
+
+    input_direc = "files/input"
+    output_direc = "files/output"
+
+    train_csv = os.path.join(output_direc, "train_dataset.csv")
+    test_csv = os.path.join(output_direc, "test_dataset.csv")
+
+
+    os.makedirs(output_direc, exist_ok=True)
+
+    with zipfile.ZipFile(ubicacion_zip, 'r') as zip_ref:
+        zip_ref.extractall("files")
+
+    def procesar(folder_path, output_csv):
+        rows = []
+
+        for target in os.listdir(folder_path):
+            target_path = os.path.join(folder_path, target)
+            if os.path.isdir(target_path):
+                for file_name in os.listdir(target_path):
+                    file_path = os.path.join(target_path, file_name)
+
+                    with open(file_path, "r", encoding="utf-8") as file:
+                        phrase = file.read().strip()
+                    rows.append({"phrase": phrase, "target": target})
+
+        with open(output_csv, "w", newline="", encoding="utf-8") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=["phrase", "target"])
+            writer.writeheader()
+            writer.writerows(rows)
+
+    procesar(os.path.join(input_direc, "train"), train_csv)
+
+    procesar(os.path.join(input_direc, "test"), test_csv)
+
+
+pregunta_01()
